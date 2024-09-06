@@ -206,7 +206,7 @@ fn derive_template_common_impl(
     // re-used if they exist.
     let mut output_file = PathBuf::from(env!("OUT_DIR"));
     output_file.push("templates");
-    output_file.push(format!("{}.rs", filename_hash(&input_file, &config)));
+    output_file.push(filename_hash(&input_file, &config));
 
     std::fs::create_dir_all(output_file.parent().unwrap()).unwrap();
 
@@ -340,6 +340,7 @@ fn derive_template_once_only_impl(
     // render_once method always results in the same code.
     // This method can be implemented in `sailfish` crate, but I found that performance
     // drops when the implementation is written in `sailfish` crate.
+    let output_source = std::fs::read_to_string(output_file_string).unwrap();
     quote! {
         impl #impl_generics sailfish::TemplateOnce for #name #ty_generics #where_clause {
             fn render_once(mut self) -> sailfish::RenderResult {
@@ -358,7 +359,7 @@ fn derive_template_once_only_impl(
                 #include_bytes_seq;
 
                 use sailfish::runtime as __sf_rt;
-                include!(#output_file_string);
+                #output_source;
 
                 Ok(())
             }
@@ -376,6 +377,7 @@ fn derive_template_mut_only_impl(
 
     // This method can be implemented in `sailfish` crate, but I found that performance
     // drops when the implementation is written in `sailfish` crate.
+    let output_source = std::fs::read_to_string(output_file_string).unwrap();
     quote! {
         impl #impl_generics sailfish::TemplateMut for #name #ty_generics #where_clause {
             fn render_mut(&mut self) -> sailfish::RenderResult {
@@ -394,7 +396,7 @@ fn derive_template_mut_only_impl(
                 #include_bytes_seq;
 
                 use sailfish::runtime as __sf_rt;
-                include!(#output_file_string);
+                #output_source;
 
                 Ok(())
             }
@@ -412,6 +414,7 @@ fn derive_template_only_impl(
 
     // This method can be implemented in `sailfish` crate, but I found that performance
     // drops when the implementation is written in `sailfish` crate.
+    let output_source = std::fs::read_to_string(output_file_string).unwrap();
     quote! {
         impl #impl_generics sailfish::Template for #name #ty_generics #where_clause {
             fn render(&self) -> sailfish::RenderResult {
@@ -430,7 +433,7 @@ fn derive_template_only_impl(
                 #include_bytes_seq;
 
                 use sailfish::runtime as __sf_rt;
-                include!(#output_file_string);
+                #output_source;
 
                 Ok(())
             }
@@ -531,6 +534,7 @@ fn derive_template_simple_impl(tokens: TokenStream) -> Result<TokenStream, syn::
     // render_once method always results in the same code.
     // This method can be implemented in `sailfish` crate, but I found that performance
     // drops when the implementation is written in `sailfish` crate.
+    let output_source = std::fs::read_to_string(output_file_string).unwrap();
     Ok(quote! {
         impl #impl_generics sailfish::TemplateSimple for #name #ty_generics #where_clause {
             fn render_once(self) -> sailfish::RenderResult {
@@ -550,7 +554,7 @@ fn derive_template_simple_impl(tokens: TokenStream) -> Result<TokenStream, syn::
 
                 use sailfish::runtime as __sf_rt;
                 let #name { #field_names } = self;
-                include!(#output_file_string);
+                #output_source;
 
                 Ok(())
             }
