@@ -206,7 +206,7 @@ fn derive_template_common_impl(
     // re-used if they exist.
     let mut output_file = PathBuf::from(env!("OUT_DIR"));
     output_file.push("templates");
-    output_file.push(filename_hash(&input_file, &config));
+    output_file.push(format!("{}.rs", filename_hash(&input_file, &config)));
 
     std::fs::create_dir_all(output_file.parent().unwrap()).unwrap();
 
